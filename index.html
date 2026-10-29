@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Walking Dead - Portal do Apocalipse & Jogo de Sobrevivência</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@300;400;600;700;900&family=Special+Elite&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        twd: {
+                            black: '#050607',
+                            dark: '#0a0c0e',
+                            card: '#12161b',
+                            border: '#242b35',
+                            red: '#8b0000',
+                            redBright: '#dc2626',
+                            rust: '#78350f',
+                            green: '#15803d',
+                            yellow: '#ca8a04',
+                            gray: '#9ca3af'
+                        }
+                    },
+                    fontFamily: {
+                        horror: ['Creepster', 'cursive'],
+                        typewriter: ['Special Elite', 'monospace'],
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050607;
+            border-left: 1px solid rgba(139, 0, 0, 0.3);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #450a0a, #8b0000);
+            border-radius: 4px;
+            border: 1px solid rgba(220, 38, 38, 0.4);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #dc2626;
+            box-shadow: 0 0 10px rgba(220, 38, 38, 0.8);
+        }
+
+        .blood-text-glow {
+            text-shadow: 0 0 10px rgba(220, 38, 38, 0.7), 0 0 20px rgba(139, 0, 0, 0.5), 2px 2px 4px #000;
+        }
+
+        .gritty-bg {
+            background-color: #0a0c0e;
+            background-image: 
+                radial-gradient(rgba(139, 0, 0, 0.15) 1px, transparent 1px),
+                radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 32px 32px, 16px 16px;
+            background-position: 0 0, 8px 8px;
+        }
+
+        .blood-splatter-border {
+            border-image: linear-gradient(to bottom right, #8b0000, #242b35, #dc2626) 1;
+        }
+
+        /* Pulse animation for zombie wave warnings */
+        @keyframes horrorPulse {
+            0%, 100% { box-shadow: inset 0 0 15px rgba(220, 38, 38, 0.2); }
+            50% { box-shadow: inset 0 0 40px rgba(220, 38, 38, 0.6); }
+        }
+
+        .game-canvas-container {
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.9), 0 0 15px rgba(139, 0, 0, 0.4);
+        }
+
+        /* Scanline effect for survivor terminal look */
+        .scanlines {
+            position: relative;
+            overflow: hidden;
+        }
+        .scanlines::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* Custom tooltip and badge styling */
+        .badge-status {
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-twd-black text-gray-200 font-sans antialiased min-h-screen selection:bg-twd-red selection:text-white gritty-bg">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-50 bg-twd-dark/95 backdrop-blur-md border-b border-twd-border/80 shadow-2xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <a href="#hero" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded bg-twd-red/20 border border-twd-red flex items-center justify-center text-twd-redBright group-hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-biohazard text-2xl animate-pulse"></i>
+                </div>
+                <div>
+                    <span class="font-horror text-2xl sm:text-3xl text-red-600 tracking-wider blood-text-glow">THE WALKING DEAD</span>
+                    <span class="block text-[10px] uppercase font-typewriter text-gray-400 -mt-1 tracking-widest">Portal do Apocalipse</span>
+                </div>
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex items-center gap-6 font-medium text-sm">
+                <a href="#plots" class="hover:text-twd-redBright transition-colors flex items-center gap-1.5"><i class="fa-solid fa-[#8b0000] fa-book-skull text-xs text-twd-redBright"></i> Temporadas & Plots</a>
+                <a href="#characters" class="hover:text-twd-redBright transition-colors flex items-center gap-1.5"><i class="fa-solid fa-users-viewfinder text-xs text-twd-redBright"></i> Personagens</a>
+                <a href="#game" class="px-3 py-1.5 rounded bg-twd-red/20 border border-twd-red text-twd-redBright hover:bg-twd-red hover:text-white transition-all font-semibold flex items-center gap-1.5 animate-pulse"><i class="fa-solid fa-gamepad"></i> Jogo de Sobrevivência</a>
+                <a href="#quiz" class="hover:text-twd-redBright transition-colors flex items-center gap-1.5"><i class="fa-solid fa-clipboard-question text-xs text-twd-redBright"></i> Quiz</a>
+                <a href="#guide" class="hover:text-twd-redBright transition-colors flex items-center gap-1.5"><i class="fa-solid fa-shield-halved text-xs text-twd-redBright"></i> Guia</a>
+            </nav>
+
+            <!-- Audio & Mobile Controls -->
+            <div class="flex items-center gap-3">
+                <button id="soundtrackToggleBtn" class="p-2.5 rounded-lg bg-twd-card border border-twd-border text-gray-300 hover:text-twd-redBright hover:border-twd-red transition-all text-sm flex items-center gap-2" title="Alternar Efeitos Sonoros / Áudio">
+                    <i class="fa-solid fa-volume-high text-twd-redBright" id="soundIcon"></i>
+                    <span class="hidden sm:inline text-xs font-typewriter" id="soundLabel">Som: LIGADO</span>
+                </button>
+
+                <button id="mobileMenuBtn" class="md:hidden p-2.5 rounded-lg bg-twd-card border border-twd-border text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobileMenu" class="hidden md:hidden border-b border-twd-border bg-twd-card px-4 py-3 space-y-2 font-medium text-sm">
+            <a href="#plots" class="block py-2 hover:text-twd-redBright border-b border-twd-border/40"><i class="fa-solid fa-book-skull mr-2 text-twd-redBright"></i> Temporadas & Plots</a>
+            <a href="#characters" class="block py-2 hover:text-twd-redBright border-b border-twd-border/40"><i class="fa-solid fa-users-viewfinder mr-2 text-twd-redBright"></i> Personagens</a>
+            <a href="#game" class="block py-2 text-twd-redBright font-bold"><i class="fa-solid fa-gamepad mr-2"></i> Jogo de Sobrevivência</a>
+            <a href="#quiz" class="block py-2 hover:text-twd-redBright border-b border-twd-border/40"><i class="fa-solid fa-clipboard-question mr-2 text-twd-redBright"></i> Quiz de Sobrevivência</a>
+            <a href="#guide" class="block py-2 hover:text-twd-redBright"><i class="fa-solid fa-shield-halved mr-2 text-twd-redBright"></i> Guia do Apocalipse</a>
+        </div>
+    </header>
+
+    <!-- Hero Banner Section -->
+    <section id="hero" class="relative min-h-[85vh] flex items-center justify-center overflow-hidden border-b border-twd-border py-16 px-4">
+        <!-- Background Overlay with Dark Gradients & Fog Effect -->
+        <div class="absolute inset-0 bg-gradient-to-t from-twd-black via-twd-dark/90 to-twd-black/70 z-10"></div>
+        <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#8b0000_1px,transparent_1px)] [background-size:16px_16px] z-0"></div>
+
+        <div class="relative z-20 max-w-5xl mx-auto text-center space-y-6">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-twd-red/20 border border-twd-red/60 text-twd-redBright text-xs font-typewriter tracking-widest uppercase">
+                <i class="fa-solid fa-skull animate-bounce"></i> "Nós somos os mortos-vivos"
+            </div>
+
+            <h1 class="text-4xl sm:text-6xl md:text-7xl font-black font-horror tracking-wider text-red-600 blood-text-glow leading-none">
+                THE WALKING DEAD
+            </h1>
+
+            <p class="text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto font-light leading-relaxed">
+                Bem-vindo ao acervo definitivo do apocalipse zumbi. Explore as 11 temporadas, segredos de enredo, fichas completas de sobreviventes e vilões, e teste sua coragem em nosso jogo de ação em tempo real.
+            </p>
+
+            <!-- CTA Action Buttons -->
+            <div class="pt-4 flex flex-wrap items-center justify-center gap-4">
+                <a href="#game" class="px-8 py-4 rounded-xl bg-gradient-to-r from-red-800 to-twd-red text-white font-bold text-lg hover:from-red-700 hover:to-red-600 shadow-lg shadow-red-900/40 hover:scale-105 transition-all flex items-center gap-3">
+                    <i class="fa-solid fa-crosshairs text-xl"></i> Jogar Sobrevivência
+                </a>
+                <a href="#plots" class="px-8 py-4 rounded-xl bg-twd-card border border-twd-border text-gray-200 font-bold text-lg hover:bg-twd-border hover:border-twd-red transition-all flex items-center gap-3">
+                    <i class="fa-solid fa-timeline text-twd-redBright"></i> Explorar Linha do Tempo
+                </a>
+            </div>
+
+            <!-- Quick Stats Bar -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-12 max-w-4xl mx-auto border-t border-twd-border/60">
+                <div class="p-4 rounded-lg bg-twd-card/60 border border-twd-border/50">
+                    <span class="block text-3xl font-black text-twd-redBright font-typewriter">11</span>
+                    <span class="text-xs uppercase font-semibold text-gray-400">Temporadas Principais</span>
+                </div>
+                <div class="p-4 rounded-lg bg-twd-card/60 border border-twd-border/50">
+                    <span class="block text-3xl font-black text-twd-redBright font-typewriter">177</span>
+                    <span class="text-xs uppercase font-semibold text-gray-400">Episódios Catalogados</span>
+                </div>
+                <div class="p-4 rounded-lg bg-twd-card/60 border border-twd-border/50">
+                    <span class="block text-3xl font-black text-twd-redBright font-typewriter">30+</span>
+                    <span class="text-xs uppercase font-semibold text-gray-400">Personagens Detalhados</span>
+                </div>
+                <div class="p-4 rounded-lg bg-twd-card/60 border border-twd-border/50">
+                    <span class="block text-3xl font-black text-twd-redBright font-typewriter">100%</span>
+                    <span class="text-xs uppercase font-semibold text-gray-400">Ação Interativa</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Seasons & Plots Timeline Section -->
+    <section id="plots" class="py-20 px-4 max-w-7xl mx-auto border-b border-twd-border">
+        <div class="text-center max-w-3xl mx-auto mb-12 space-y-3">
+            <h2 class="text-3xl sm:text-5xl font-black font-horror text-red-600 blood-text-glow">
+                CRONOLOGIA E PLOTS PRINCIPAIS
+            </h2>
+            <p class="text-gray-400 text-sm sm:text-base">
+                Navegue pelas temporadas de The Walking Dead e descubra a evolução dos conflitos, locais icônicos e viradas marcantes do enredo.
+            </p>
+        </div>
+
+        <!-- Season Selector Tabs -->
+        <div id="seasonTabs" class="flex items-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar scroll-smooth">
+            <!-- Dynamic Season Buttons generated via JS -->
+        </div>
+
+        <!-- Season Detail Card Container -->
+        <div id="seasonDetailCard" class="bg-twd-card border border-twd-border rounded-2xl p-6 sm:p-8 shadow-2xl transition-all duration-300">
+            <!-- Dynamic content injected via JS -->
+        </div>
+    </section>
+
+    <!-- Characters Codex Section -->
+    <section id="characters" class="py-20 px-4 max-w-7xl mx-auto border-b border-twd-border">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+            <div>
+                <h2 class="text-3xl sm:text-5xl font-black font-horror text-red-600 blood-text-glow mb-2">
+                    SOBREVIVENTES E VILÕES
+                </h2>
+                <p class="text-gray-400 text-sm sm:text-base">
+                    Explore o histórico, habilidades, armas marcantes e trajetória de cada personagem.
+                </p>
+            </div>
+
+            <!-- Filters & Search Bar -->
+            <div class="flex flex-wrap items-center gap-3">
+                <!-- Search Input -->
+                <div class="relative min-w-[220px]">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                    <input type="text" id="characterSearchInput" placeholder="Buscar por nome..." class="w-full bg-twd-dark border border-twd-border rounded-lg pl-9 pr-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-twd-red transition-all">
+                </div>
+
+                <!-- Status Filter Dropdown -->
+                <select id="characterStatusFilter" class="bg-twd-dark border border-twd-border rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-twd-red cursor-pointer">
+                    <option value="ALL">Todos os Status</option>
+                    <option value="VIVO">Vivos / Ativos</option>
+                    <option value="MORTO">Mortos</option>
+                    <option value="DESAPARECIDO">Desaparecidos / Incertos</option>
+                    <option value="LÍDER">Líderes</option>
+                    <option value="VILÃO">Vilões / Antagonistas</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Characters Grid -->
+        <div id="charactersGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Cards generated dynamically via JavaScript -->
+        </div>
+    </section>
+
+    <!-- Interactive Canvas Game Section -->
+    <section id="game" class="py-20 px-4 max-w-7xl mx-auto border-b border-twd-border">
+        <div class="text-center max-w-3xl mx-auto mb-8 space-y-2">
+            <span class="px-3 py-1 rounded-full bg-twd-red/20 border border-twd-red text-twd-redBright text-xs font-typewriter uppercase tracking-widest">
+                <i class="fa-solid fa-triangle-exclamation mr-1"></i> Modo de Jogo em Tempo Real
+            </span>
+            <h2 class="text-3xl sm:text-5xl font-black font-horror text-red-600 blood-text-glow">
+                OUTBREAK: SURVIVAL ZONE
+            </h2>
+            <p class="text-gray-400 text-sm sm:text-base">
+                Defenda sua barricada contra ondas incessantes de Walkers e saqueadores! Colete suprimentos, melhore seu arsenal e sobreviva o máximo de dias possível.
+            </p>
+        </div>
+
+        <!-- Main Game Box Container -->
+        <div class="bg-twd-card border border-twd-border rounded-2xl p-4 sm:p-6 shadow-2xl relative scanlines">
+            <!-- Game HUD / Top Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-4 bg-twd-dark p-3.5 rounded-xl border border-twd-border">
+                <!-- Day / Wave counter -->
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-sun text-yellow-500 text-lg"></i>
+                        <span class="text-sm font-semibold text-gray-400 uppercase">Dia:</span>
+                        <span id="gameDayText" class="text-xl font-bold font-typewriter text-white">1</span>
+                    </div>
+                    <div class="flex items-center gap-2 border-l border-twd-border pl-4">
+                        <i class="fa-solid fa-skull text-twd-redBright text-lg"></i>
+                        <span class="text-sm font-semibold text-gray-400 uppercase">Abates:</span>
+                        <span id="gameKillsText" class="text-xl font-bold font-typewriter text-twd-redBright">0</span>
+                    </div>
+                </div>
+
+                <!-- Resources Bar -->
+                <div class="flex items-center gap-4 text-sm font-typewriter">
+                    <div class="flex items-center gap-1.5 text-yellow-500" title="Suprimentos para Upgrades">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                        <span id="gameSuppliesText" class="font-bold">100</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-red-400" title="Munição Restante">
+                        <i class="fa-solid fa-gun"></i>
+                        <span id="gameAmmoText" class="font-bold">30 / 30</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-green-400" title="Saúde do Sobrevivente">
+                        <i class="fa-solid fa-heart"></i>
+                        <span id="gameHealthText" class="font-bold">100 HP</span>
+                    </div>
+                </div>
+
+                <!-- Game Controls Bar -->
+                <div class="flex items-center gap-2">
+                    <button id="gameStartBtn" class="px-4 py-2 rounded-lg bg-twd-red text-white font-bold hover:bg-twd-redBright transition-all text-xs uppercase flex items-center gap-1.5 shadow-md">
+                        <i class="fa-solid fa-play"></i> Iniciar Jogo
+                    </button>
+                    <button id="gamePauseBtn" class="px-3 py-2 rounded-lg bg-twd-dark border border-twd-border text-gray-300 hover:text-white transition-all text-xs uppercase hidden">
+                        <i class="fa-solid fa-pause"></i> Pausar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Hero Selection Modal / Bar before game start -->
+            <div id="characterSelectOverlay" class="mb-4 bg-twd-dark/90 p-4 rounded-xl border border-twd-border flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-bold text-white font-typewriter"><i class="fa-solid fa-user-ninja text-twd-redBright mr-2"></i> Escolha seu Sobrevivente:</h3>
+                    <p class="text-xs text-gray-400">Cada herói possui arma e características de combate únicas.</p>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full md:w-auto">
+                    <button data-hero="rick" class="hero-pick-btn active p-3 rounded-xl border-2 border-twd-red bg-twd-card text-left transition-all hover:scale-105">
+                        <span class="block font-bold text-sm text-white">Rick Grimes</span>
+                        <span class="text-[11px] text-gray-400 block"><i class="fa-solid fa-gun text-yellow-500"></i> Colt Python</span>
+                    </button>
+                    <button data-hero="daryl" class="hero-pick-btn p-3 rounded-xl border border-twd-border bg-twd-card text-left transition-all hover:scale-105">
+                        <span class="block font-bold text-sm text-white">Daryl Dixon</span>
+                        <span class="text-[11px] text-gray-400 block"><i class="fa-solid fa-bow-arrow text-green-500"></i> Besta (Flechas)</span>
+                    </button>
+                    <button data-hero="michonne" class="hero-pick-btn p-3 rounded-xl border border-twd-border bg-twd-card text-left transition-all hover:scale-105">
+                        <span class="block font-bold text-sm text-white">Michonne</span>
+                        <span class="text-[11px] text-gray-400 block"><i class="fa-solid fa-shield text-blue-400"></i> Katana (Corpo a corpo)</span>
+                    </button>
+                    <button data-hero="negan" class="hero-pick-btn p-3 rounded-xl border border-twd-border bg-twd-card text-left transition-all hover:scale-105">
+                        <span class="block font-bold text-sm text-white">Negan</span>
+                        <span class="text-[11px] text-gray-400 block"><i class="fa-solid fa-baseball-bat-ball text-red-400"></i> Lucille (Taco de Arame)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Canvas Element -->
+            <div class="game-canvas-container rounded-xl overflow-hidden bg-black aspect-video relative flex items-center justify-center">
+                <canvas id="gameCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+
+                <!-- Game Over Screen Overlay -->
+                <div id="gameOverOverlay" class="absolute inset-0 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4 hidden z-20">
+                    <i class="fa-solid fa-skull-crossbones text-6xl text-twd-redBright animate-bounce"></i>
+                    <h3 class="text-4xl font-black font-horror text-twd-redBright blood-text-glow">VOCÊ FOI DEVORADO!</h3>
+                    <p class="text-gray-300 max-w-md text-sm">A horda infectou sua posição. Seus esforços garantiram dias preciosos de sobrevivência para o grupo.</p>
+                    
+                    <div class="bg-twd-card p-4 rounded-xl border border-twd-border flex gap-6 font-typewriter text-sm">
+                        <div>
+                            <span class="block text-gray-400 text-xs uppercase">Dias Sobrevividos</span>
+                            <span id="finalDaysText" class="text-2xl font-bold text-white">0</span>
+                        </div>
+                        <div class="border-l border-twd-border pl-6">
+                            <span class="block text-gray-400 text-xs uppercase">Total de Zumbis</span>
+                            <span id="finalKillsText" class="text-2xl font-bold text-twd-redBright">0</span>
+                        </div>
+                    </div>
+
+                    <button id="restartGameBtn" class="px-6 py-3 rounded-xl bg-twd-red text-white font-bold hover:bg-twd-redBright transition-all uppercase text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i> Tentar Novamente
+                    </button>
+                </div>
+            </div>
+
+            <!-- On-Screen Touch / Mobile Game Controls -->
+            <div class="mt-4 md:hidden grid grid-cols-2 gap-4 bg-twd-dark p-3 rounded-xl border border-twd-border">
+                <div class="flex flex-col items-center justify-center gap-2">
+                    <span class="text-[10px] text-gray-400 font-typewriter">MOVER PERSONAGEM</span>
+                    <div class="grid grid-cols-3 gap-1 w-32">
+                        <div></div>
+                        <button id="btnUp" class="p-3 bg-twd-card border border-twd-border rounded text-center active:bg-twd-red"><i class="fa-solid fa-chevron-up"></i></button>
+                        <div></div>
+                        <button id="btnLeft" class="p-3 bg-twd-card border border-twd-border rounded text-center active:bg-twd-red"><i class="fa-solid fa-chevron-left"></i></button>
+                        <button id="btnDown" class="p-3 bg-twd-card border border-twd-border rounded text-center active:bg-twd-red"><i class="fa-solid fa-chevron-down"></i></button>
+                        <button id="btnRight" class="p-3 bg-twd-card border border-twd-border rounded text-center active:bg-twd-red"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-center justify-center gap-2">
+                    <span class="text-[10px] text-gray-400 font-typewriter">AÇÕES DE COMBATE</span>
+                    <button id="btnShoot" class="w-full py-4 rounded-xl bg-twd-red text-white font-bold text-sm uppercase shadow-lg active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-crosshairs"></i> ATACAR / ATIRAR
+                    </button>
+                    <button id="btnReload" class="w-full py-2 rounded-lg bg-twd-card border border-twd-border text-gray-300 font-semibold text-xs uppercase active:bg-twd-border">
+                        <i class="fa-solid fa-rotate"></i> RECARREGAR
+                    </button>
+                </div>
+            </div>
+
+            <!-- Upgrades & Instruction Shop -->
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-4 rounded-xl bg-twd-dark border border-twd-border">
+                    <h4 class="font-bold text-white text-sm font-typewriter mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-keyboard text-twd-redBright"></i> Controles no Computador
+                    </h4>
+                    <ul class="text-xs text-gray-400 space-y-1">
+                        <li><span class="text-gray-200 font-mono">W, A, S, D</span> ou Setas: Mover sobrevivente</li>
+                        <li><span class="text-gray-200 font-mono">Mouse</span>: Mirar / <span class="text-gray-200 font-mono">Clique Esquerdo</span>: Atirar</li>
+                        <li><span class="text-gray-200 font-mono">R</span>: Recarregar Arma</li>
+                        <li><span class="text-gray-200 font-mono">Espaço</span>: Ataque Especial / Golpe Melee</li>
+                    </ul>
+                </div>
+
+                <div class="p-4 rounded-xl bg-twd-dark border border-twd-border md:col-span-2">
+                    <h4 class="font-bold text-white text-sm font-typewriter mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-cart-shopping text-yellow-500"></i> Loja do Acampamento de Sobreviventes
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button id="buyHealthBtn" class="p-2.5 rounded bg-twd-card border border-twd-border hover:border-green-500 text-left transition-all flex flex-col justify-between">
+                            <span class="text-xs font-bold text-green-400"><i class="fa-solid fa-kit-medical mr-1"></i> Kit Médico</span>
+                            <span class="text-[10px] text-gray-400">+40 HP (Custo: 30 Suprimentos)</span>
+                        </button>
+
+                        <button id="buyAmmoBtn" class="p-2.5 rounded bg-twd-card border border-twd-border hover:border-yellow-500 text-left transition-all flex flex-col justify-between">
+                            <span class="text-xs font-bold text-yellow-400"><i class="fa-solid fa-boxes-packing mr-1"></i> Caixa de Munição</span>
+                            <span class="text-[10px] text-gray-400">+50 Balas (Custo: 25 Suprimentos)</span>
+                        </button>
+
+                        <button id="buyFortifyBtn" class="p-2.5 rounded bg-twd-card border border-twd-border hover:border-twd-red text-left transition-all flex flex-col justify-between">
+                            <span class="text-xs font-bold text-red-400"><i class="fa-solid fa-shield-halved mr-1"></i> Fortalecer Defesas</span>
+                            <span class="text-[10px] text-gray-400">+Dano / Barricada (Custo: 50 Suprimentos)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Quiz Section -->
+    <section id="quiz" class="py-20 px-4 max-w-5xl mx-auto border-b border-twd-border">
+        <div class="bg-twd-card border border-twd-border rounded-2xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+            <div class="text-center max-w-2xl mx-auto mb-8 space-y-2">
+                <span class="px-3 py-1 rounded-full bg-twd-red/20 border border-twd-red text-twd-redBright text-xs font-typewriter uppercase">
+                    <i class="fa-solid fa-brain mr-1"></i> Teste Psicológico de Sobrevivência
+                </span>
+                <h2 class="text-3xl sm:text-4xl font-black font-horror text-red-600 blood-text-glow">
+                    QUAL SOBREVIVENTE VOCÊ SERIA?
+                </h2>
+                <p class="text-gray-400 text-sm">
+                    Responda às dilemas morais do apocalipse zumbi e descubra seu perfil psicológico no universo de TWD.
+                </p>
+            </div>
+
+            <!-- Quiz Container -->
+            <div id="quizContainer" class="max-w-2xl mx-auto">
+                <!-- Dynamic Quiz Questions loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Guide Section -->
+    <section id="guide" class="py-20 px-4 max-w-7xl mx-auto border-b border-twd-border">
+        <div class="text-center max-w-3xl mx-auto mb-12 space-y-2">
+            <h2 class="text-3xl sm:text-5xl font-black font-horror text-red-600 blood-text-glow">
+                REGRAS PARA SOBREVIVER AO APOCALIPSE
+            </h2>
+            <p class="text-gray-400 text-sm sm:text-base">
+                O manual não escrito de sobrevivência criado pelos grupos de Rick Grimes, Alexandria e os Salvadores.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-6 rounded-2xl bg-twd-card border border-twd-border space-y-3 hover:border-twd-red transition-all">
+                <div class="w-12 h-12 rounded-xl bg-twd-red/20 border border-twd-red flex items-center justify-center text-twd-redBright text-xl font-bold">
+                    01
+                </div>
+                <h3 class="text-lg font-bold text-white font-typewriter">Mire Sempre na Cabeça</h3>
+                <p class="text-sm text-gray-400">
+                    Não importa se usou tiro, faca, flecha ou taco: o cérebro do Walker precisa ser destruído. Tiros no corpo apenas gastam munição preciosa.
+                </p>
+            </div>
+
+            <div class="p-6 rounded-2xl bg-twd-card border border-twd-border space-y-3 hover:border-twd-red transition-all">
+                <div class="w-12 h-12 rounded-xl bg-twd-red/20 border border-twd-red flex items-center justify-center text-twd-redBright text-xl font-bold">
+                    02
+                </div>
+                <h3 class="text-lg font-bold text-white font-typewriter">O Silêncio É Sua Maior Arma</h3>
+                <p class="text-sm text-gray-400">
+                    O som de tiros atrai hordas inteiras de milhas de distância. Priorize bestas, katanas, facas e armas com silenciador improvisado.
+                </p>
+            </div>
+
+            <div class="p-6 rounded-2xl bg-twd-card border border-twd-border space-y-3 hover:border-twd-red transition-all">
+                <div class="w-12 h-12 rounded-xl bg-twd-red/20 border border-twd-red flex items-center justify-center text-twd-redBright text-xl font-bold">
+                    03
+                </div>
+                <h3 class="text-lg font-bold text-white font-typewriter">Cuidado com os Vivos</h3>
+                <p class="text-sm text-gray-400">
+                    Como Rick Grimes provou repetidamente: os infectados são previsíveis. A ambição e o desespero dos vivos são os verdadeiros monstros.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-twd-dark border-t border-twd-border py-12 px-4 text-center text-xs text-gray-500 space-y-4">
+        <div class="flex items-center justify-center gap-2">
+            <span class="font-horror text-2xl text-red-600 blood-text-glow">THE WALKING DEAD</span>
+        </div>
+        <p class="max-w-md mx-auto">
+            Portal interativo de fãs dedicado ao universo criado por Robert Kirkman, Frank Darabont e AMC Networks.
+        </p>
+        <p class="font-typewriter text-gray-600">
+            &copy; 2026 Portal The Walking Dead. Desenvolvido para fins de entretenimento.
+        </p>
+    </footer>
+
+    <!-- Character Detail Modal -->
+    <div id="characterModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-twd-card border border-twd-border max-w-2xl w-full rounded-2xl overflow-hidden shadow-2xl relative max-h-[90vh] flex flex-col">
+            <button id="closeModalBtn" class="absolute top-4 right-4 text-gray-400 hover:text-white bg-twd-dark/80 p-2 rounded-full w-10 h-10 flex items-center justify-center z-10">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div id="modalContent" class="overflow-y-auto p-6 space-y-6">
+                <!-- Modal content dynamically injected -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Audio Synthesizer Engine using Web Audio API
+        class SoundEngine {
+            constructor() {
+                this.audioCtx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.audioCtx) {
+                    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playGunshot() {
+                if (!this.enabled) return;
+                this.init();
+                
+                const now = this.audioCtx.currentTime;
+                const osc = this.audioCtx.createOscillator();
+                const gain = this.audioCtx.createGain();
+                
+                // Noise buffer for realistic shot impact
+                const bufferSize = this.audioCtx.sampleRate * 0.15;
+                const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+                const output = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = this.audioCtx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = this.audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1000, now);
+                filter.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+
+                gain.gain.setValueAtTime(0.8, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.audioCtx.destination);
+
+                noise.start(now);
+            }
+
+            playZombieGrowl() {
+                if (!this.enabled) return;
+                this.init();
+
+                const now = this.audioCtx.currentTime;
+                const osc = this.audioCtx.createOscillator();
+                const gain = this.audioCtx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(80, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.4);
+
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+
+                osc.connect(gain);
+                gain.connect(this.audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+
+            playSlash() {
+                if (!this.enabled) return;
+                this.init();
+
+                const now = this.audioCtx.currentTime;
+                const osc = this.audioCtx.createOscillator();
+                const gain = this.audioCtx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+
+                osc.connect(gain);
+                gain.connect(this.audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.1);
+            }
+        }
+
+        const sounds = new SoundEngine();
+
+        const seasonsData = [
+            {
+                number: 1,
+                title: "Temporada 1: O Despertar & Atlanta",
+                episodes: 6,
+                location: "Hospital de King County / Acampamento de Atlanta / CDC",
+                survivalRate: "65%",
+                villain: "Horda de Atlanta & Dr. Edwin Jenner (Dilema no CDC)",
+                plot: "O xerife Rick Grimes acorda de um coma e descobre que o mundo foi devastado por uma praga que reanima os mortos. Ele viaja para Atlanta em busca de sua esposa Lori e seu filho Carl, encontrando um grupo de sobreviventes liderado temporariamente por seu amigo Shane Walsh. O grupo busca respostas no CDC, mas descobre que a infecção é global e incurável.",
+                highlights: ["Despertar icônico de Rick no hospital", "Primeiro confronto em Atlanta com a horda na rua", "Explosão dramática do Centro de Controle de Doenças (CDC)"]
+            },
+            {
+                number: 2,
+                title: "Temporada 2: A Fazenda do Hershel",
+                episodes: 16,
+                location: "Fazenda da Família Greene",
+                survivalRate: "50%",
+                villain: "Conflito Moral Interno & Queda da Fazenda",
+                plot: "Após o desaparecimento da filha de Carol, Sophia, o grupo busca refúgio na fazenda do veterinário religioso Hershel Greene. O conflito filosófico sobre o destino dos 'caminhantes' cresce, culminando na revelação devastadora do celeiro e na deterioração da sanidade de Shane, forçando Rick a tomar uma decisão trágica para proteger o grupo.",
+                highlights: ["A busca por Sophia e a cena do celeiro", "O duelo fatal entre Rick e Shane", "A invasão da fazenda por uma colossal horda de zumbis"]
+            },
+            {
+                number: 3,
+                title: "Temporada 3: A Prisão vs. Woodbury",
+                episodes: 16,
+                location: "Prisão West Georgia Correctional / Woodbury",
+                survivalRate: "45%",
+                villain: "O Governador (Philip Blake)",
+                plot: "O grupo limpa uma prisão de alta segurança para se estabelecer, mas perde Lori durante o parto de Judith. Enquanto isso, Andrea e a misteriosa Michonne encontram Woodbury, uma comunidade murada aparentemente utópica liderada pelo sociopata 'O Governador'. Uma guerra brutal estoura entre os dois assentamentos.",
+                highlights: ["Morte dramática de Lori e nascimento de Judith", "Introdução da icônica Michonne e sua katana", "Ataque inicial do Governador à prisão"]
+            },
+            {
+                number: 4,
+                title: "Temporada 4: A Queda da Prisão & Terminus",
+                episodes: 16,
+                location: "Prisão / Trilhos do Trem rumo ao Terminus",
+                survivalRate: "40%",
+                villain: "O Governador & Os Canibais de Terminus",
+                plot: "Após um surto mortal de gripe na prisão, o Governador retorna com um tanque de guerra, destruindo o refúgio do grupo e executando Hershel. O grupo se dispersa em pequenos times ao longo dos trilhos de trem em busca da promessa de 'Terminus', apenas para descobrir que o local é um entreposto de canibais.",
+                highlights: ["Decapitação chocante de Hershel Greene", "Episódio emocional 'The Grove' com Carol e Lizzie", "Chegada e aprisionamento no vagão de trem em Terminus"]
+            },
+            {
+                number: 5,
+                title: "Temporada 5: Terminus & Chegada a Alexandria",
+                episodes: 16,
+                location: "Terminus / Hospital Grady Memorial / Alexandria",
+                survivalRate: "55%",
+                villain: "Gareth (Canibais) & Policiais de Atlanta",
+                plot: "Rick e o grupo escapam de Terminus graças a um plano ousado de Carol. Enfrentam tragédias pessoais com as perdas de Bob, Beth e Tyreese durante a jornada sem rumo rumo ao norte, até que um recrutador chamado Aaron os convida para entrar em Alexandria, uma comunidade fortificada isolada do horror externo.",
+                highlights: ["Destruição de Terminus por Carol Peletier", "Confronto e morte de Beth no hospital", "Entrada chocante do grupo exausto na utópica Alexandria"]
+            },
+            {
+                number: 6,
+                title: "Temporada 6: Invasão da Horda & Chegada dos Salvadores",
+                episodes: 16,
+                location: "Alexandria / Hilltop / O Santuário",
+                survivalRate: "60%",
+                villain: "Os Lobos & Negan (Salvadores)",
+                plot: "Rick assume o controle da defesa de Alexandria contra os invasores 'Lobos' e uma horda gigantesca que derruba o muro. O grupo estabelece aliança com Hilltop e ataca postos avançados dos 'Salvadores', acreditando estarem no controle — até serem emboscados e cercados por Negan.",
+                highlights: ["Carl perde o olho durante a invasão de Walkers em Alexandria", "Ataque furtivo ao posto avançado dos Salvadores", "O tenso e aterrorizante cliffhanger do alinhamento com Negan"]
+            },
+            {
+                number: 7,
+                title: "Temporada 7: A Domínio de Negan & A Aliança",
+                episodes: 16,
+                location: "Santuário / Alexandria / Hilltop / O Reino",
+                survivalRate: "50%",
+                villain: "Negan & Os Salvadores",
+                plot: "Negan executa brutalmente Glenn e Abraham com seu taco de arame farpado 'Lucille', subjugando Alexandria sob um regime de extorsão. Rick, destruído psicologicamente, aos poucos reúne força e busca aliança com Hilltop, O Reino (liderado pelo Rei Ezekiel) e os Catadores para declarar guerra aos Salvadores.",
+                highlights: ["As mortes devastadoras de Glenn Rhee e Abraham Ford", "A introdução de Ezekiel e do tigre Shiva", "Início da revolta Unida contra o Santuário"]
+            },
+            {
+                number: 8,
+                title: "Temporada 8: Guerra Total",
+                episodes: 16,
+                location: "Campos de Batalha / Santuário / Alexandria",
+                survivalRate: "65%",
+                villain: "Negan & Facções Hostis",
+                plot: "A Guerra Total entre a Aliança de Rick e os Salvadores de Negan atinge seu ápice. Após batalhas sangrentas e a trágica morte de Carl Grimes por uma mordida, Rick decide honrar o desejo de paz do filho, derrotando Negan em combate direto, mas poupando sua vida para construir um futuro civilizado.",
+                highlights: ["Morte comovente de Carl Grimes", "Ataque com morderes nos muros de Alexandria", "Duelo final sob a árvore entre Rick e Negan"]
+            },
+            {
+                number: 9,
+                title: "Temporada 9: Desaparecimento de Rick & Os Sussurradores",
+                episodes: 16,
+                location: "Ponte da Aliança / Feira das Comunidades",
+                survivalRate: "55%",
+                villain: "Alpha & Beta (Os Sussurradores)",
+                plot: "Anos após a derrota de Negan, Rick Grimes se sacrifica explodindo uma ponte para salvar as comunidades de uma horda de zumbis, sendo resgatado secretamente pelo helicóptero da CRM. Anos depois, surge uma terrível ameaça: 'Os Sussurradores', humanos que vestem peles de zumbis para se camuflar.",
+                highlights: ["Despedida épica e explosão da ponte por Rick Grimes", "Cena das estacas da fronteira marcadas por Alpha", "Salto temporal e evolução de Judith Grimes"]
+            },
+            {
+                number: 10,
+                title: "Temporada 10: A Guerra dos Sussurradores",
+                episodes: 22,
+                location: "Alexandria / O Hospital Cercado / Cavernas",
+                survivalRate: "60%",
+                villain: "Alpha, Beta & Horda Gigante",
+                plot: "A tensão entre as comunidades e os Sussurradores resulta em uma guerra psicológica e tática. Negan, libertado da cela, se infiltra nos Sussurradores e decapita Alpha. Beta assume o comando e direciona uma horda massiva para destruir os sobreviventes no confronto final.",
+                highlights: ["Infiltração de Negan e execução de Alpha", "Batalha da Horda Final com Beta", "Episódio solo de origem de Negan ('Here's Negan')"]
+            },
+            {
+                number: 11,
+                title: "Temporada 11: A Commonwealth & Conclusão",
+                episodes: 24,
+                location: "Commonwealth / Reapers / Alexandria",
+                survivalRate: "70%",
+                villain: "Pamela Milton, Lance Hornsby & Reapers",
+                plot: "Com as comunidades destruídas, os sobreviventes entram em contato com a Commonwealth, uma megalópole autoritária de 50 mil habitantes com classes sociais rígidas. Daryl, Carol, Maggie e Negan lideram a revolução para derrubar a corrupção do governo de Pamela Milton e garantir um futuro livre.",
+                highlights: ["Ataque dos Reapers no escuro", "Revolução nas ruas da Commonwealth contra os militares", "Desfecho da série principal e pontes para os Spin-offs"]
+            }
+        ];
+
+        const charactersData = [
+            {
+                id: "rick",
+                name: "Rick Grimes",
+                role: "Líder Lendário",
+                status: "VIVO",
+                category: "LÍDER",
+                weapon: "Colt Python .357 Magnum",
+                firstApp: "Temporada 1, Episódio 1",
+                actor: "Andrew Lincoln",
+                quote: "Não somos mais os mesmos. É assim que sobrevivemos.",
+                avatar: "https://placehold.co/400x500/12161b/ef4444?text=Rick+Grimes",
+                stats: { survival: 98, combat: 95, leadership: 99, empathy: 75 },
+                bio: "Ex-xerife de King County que acordou de um coma no apocalipse. Liderou o grupo principal através de inúmeras tragédias, unindo comunidades e moldando a resistência humana contra Walkers e vilões implacáveis."
+            },
+            {
+                id: "daryl",
+                name: "Daryl Dixon",
+                role: "Rastreador & Caçador",
+                status: "VIVO",
+                category: "VIVO",
+                weapon: "Besta Stryker / Motocicleta",
+                firstApp: "Temporada 1, Episódio 3",
+                actor: "Norman Reedus",
+                quote: "Ainda há pessoas boas neste mundo.",
+                avatar: "https://placehold.co/400x500/12161b/22c55e?text=Daryl+Dixon",
+                stats: { survival: 100, combat: 96, leadership: 85, empathy: 80 },
+                bio: "Especialista em rastreamento e sobrevivência selvagem. Inicialmente um lobo solitário rebelde, tornou-se o braço direito e irmão de consideração de Rick Grimes, assumindo papel vital no destino do grupo."
+            },
+            {
+                id: "michonne",
+                name: "Michonne Hawthorne",
+                role: "Guerreira Katana",
+                status: "VIVO",
+                category: "LÍDER",
+                weapon: "Katana Japonesa",
+                firstApp: "Temporada 2, Episódio 13",
+                actor: "Danai Gurira",
+                quote: "Eu não posso me perder de novo.",
+                avatar: "https://placehold.co/400x500/12161b/3b82f6?text=Michonne",
+                stats: { survival: 96, combat: 98, leadership: 92, empathy: 82 },
+                bio: "Mestre no manuseio de katana que vagava pelo apocalipse com dois zumbis sem mandíbula em correntes. Tornou-se líder estratégica de Alexandria e parceira de Rick Grimes."
+            },
+            {
+                id: "negan",
+                name: "Negan Smith",
+                role: "Ex-Líder dos Salvadores / Anti-herói",
+                status: "VIVO",
+                category: "VILÃO",
+                weapon: "Lucille (Taco de Arame Farpado)",
+                firstApp: "Temporada 6, Episódio 16",
+                actor: "Jeffrey Dean Morgan",
+                quote: "Pessoas são o recurso do qual este mundo é feito.",
+                avatar: "https://placehold.co/400x500/12161b/dc2626?text=Negan",
+                stats: { survival: 95, combat: 92, leadership: 94, empathy: 45 },
+                bio: "O carismático e tirânico líder dos Salvadores que impôs terror nas comunidades com seu taco 'Lucille'. Após anos preso em Alexandria, trilhou um complexo caminho de redenção."
+            },
+            {
+                id: "carol",
+                name: "Carol Peletier",
+                role: "Estrategista de Sobrevivência",
+                status: "VIVO",
+                category: "LÍDER",
+                weapon: "Faca de Combate / Rifle de Precisão",
+                firstApp: "Temporada 1, Episódio 3",
+                actor: "Melissa McBride",
+                quote: "Olhe para as flores.",
+                avatar: "https://placehold.co/400x500/12161b/eab308?text=Carol+Peletier",
+                stats: { survival: 99, combat: 91, leadership: 90, empathy: 70 },
+                bio: "Evoluiu de uma vítima submissa de abuso doméstico para uma das sobreviventes mais fatais, astutas e táticas de todo o universo de The Walking Dead."
+            },
+            {
+                id: "glenn",
+                name: "Glenn Rhee",
+                role: "Batedor & Coração do Grupo",
+                status: "MORTO",
+                category: "MORTO",
+                weapon: "Pistola / Faca de Batedor",
+                firstApp: "Temporada 1, Episódio 2",
+                actor: "Steven Yeun",
+                quote: "Maggie, eu vou te encontrar.",
+                avatar: "https://placehold.co/400x500/12161b/6b7280?text=Glenn+Rhee",
+                stats: { survival: 90, combat: 82, leadership: 80, empathy: 98 },
+                bio: "Ex-entregador de pizza que salvou Rick em Atlanta. Sua agilidade, coragem moral e amor por Maggie tornaram sua trágica morte às mãos de Negan um dos momentos mais marcantes da TV."
+            },
+            {
+                id: "maggie",
+                name: "Maggie Rhee",
+                role: "Líder de Hilltop",
+                status: "VIVO",
+                category: "LÍDER",
+                weapon: "Escopeta / Machete",
+                firstApp: "Temporada 2, Episódio 2",
+                actor: "Lauren Cohan",
+                quote: "A única coisa que importa agora são aqueles que ainda estão aqui.",
+                avatar: "https://placehold.co/400x500/12161b/a855f7?text=Maggie+Greene",
+                stats: { survival: 92, combat: 88, leadership: 93, empathy: 78 },
+                bio: "Filha de Hershel Greene que enfrentou perdas trágicas de toda sua família. Assumiu a liderança firme da comunidade de Hilltop, tornando-se uma comandante resiliente."
+            },
+            {
+                id: "carl",
+                name: "Carl Grimes",
+                role: "A Esperança do Futuro",
+                status: "MORTO",
+                category: "MORTO",
+                weapon: "Beretta 92FS / Chapéu de Xerife",
+                firstApp: "Temporada 1, Episódio 1",
+                actor: "Chandler Riggs",
+                quote: "Temos que encontrar um jeito de ter paz novamente.",
+                avatar: "https://placehold.co/400x500/12161b/6b7280?text=Carl+Grimes",
+                stats: { survival: 88, combat: 85, leadership: 82, empathy: 92 },
+                bio: "Cresceu dentro do apocalipse, perdendo a infância para a violência. Suas últimas palavras inspiraram Rick a poupar a vida de Negan e construir um novo mundo moral."
+            },
+            {
+                id: "governor",
+                name: "O Governador (Philip)",
+                role: "Ditador de Woodbury",
+                status: "MORTO",
+                category: "VILÃO",
+                weapon: "AUG A1 Assault Rifle",
+                firstApp: "Temporada 3, Episódio 3",
+                actor: "David Morrissey",
+                quote: "Neste mundo, você mata ou morre.",
+                avatar: "https://placehold.co/400x500/12161b/991b1b?text=O+Governador",
+                stats: { survival: 90, combat: 88, leadership: 91, empathy: 10 },
+                bio: "Líder psicótico de Woodbury que mantinha cabeças de zumbis em aquários e sua filha infectada acorrentada. Liderou o ataque devastador que destruiu a prisão."
+            },
+            {
+                id: "alpha",
+                name: "Alpha",
+                role: "Líder dos Sussurradores",
+                status: "MORTO",
+                category: "VILÃO",
+                weapon: "Machete / Máscara de Pele de Zumbi",
+                firstApp: "Temporada 9, Episódio 10",
+                actor: "Samantha Morton",
+                quote: "Somos o fim do mundo.",
+                avatar: "https://placehold.co/400x500/12161b/991b1b?text=Alpha",
+                stats: { survival: 96, combat: 80, leadership: 92, empathy: 5 },
+                bio: "Líder fanática dos Sussurradores que rejeitou a civilização para viver de forma bestial entre hordas de caminhantes, vestindo peles humanas."
+            }
+        ];
+
+        function renderSeasons() {
+            const tabsContainer = document.getElementById('seasonTabs');
+            const detailContainer = document.getElementById('seasonDetailCard');
+
+            tabsContainer.innerHTML = seasonsData.map((s, idx) => `
+                <button onclick="selectSeason(${idx})" class="season-btn ${idx === 0 ? 'bg-twd-red text-white border-twd-redBright' : 'bg-twd-dark text-gray-400 border-twd-border hover:border-twd-red'} px-4 py-2.5 rounded-xl border text-sm font-typewriter font-bold whitespace-nowrap transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-tape text-xs"></i> Temp ${s.number}
+                </button>
+            `).join('');
+
+            selectSeason(0);
+        }
+
+        function selectSeason(index) {
+            const s = seasonsData[index];
+            
+            // Highlight tab button
+            document.querySelectorAll('.season-btn').forEach((btn, idx) => {
+                if (idx === index) {
+                    btn.className = "season-btn bg-twd-red text-white border-twd-redBright px-4 py-2.5 rounded-xl border text-sm font-typewriter font-bold whitespace-nowrap transition-all flex items-center gap-2 shadow-lg shadow-red-900/40";
+                } else {
+                    btn.className = "season-btn bg-twd-dark text-gray-400 border-twd-border hover:border-twd-red px-4 py-2.5 rounded-xl border text-sm font-typewriter font-bold whitespace-nowrap transition-all flex items-center gap-2";
+                }
+            });
+
+            const detailContainer = document.getElementById('seasonDetailCard');
+            detailContainer.innerHTML = `
+                <div class="space-y-6">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-twd-border/60 pb-4">
+                        <div>
+                            <span class="text-xs font-typewriter text-twd-redBright uppercase tracking-widest block mb-1">Dossiê de Temporada</span>
+                            <h3 class="text-2xl sm:text-3xl font-black text-white font-typewriter">${s.title}</h3>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs font-typewriter">
+                            <span class="px-3 py-1.5 rounded-lg bg-twd-dark border border-twd-border text-gray-300"><i class="fa-solid fa-tv text-yellow-500 mr-1.5"></i> ${s.episodes} Episódios</span>
+                            <span class="px-3 py-1.5 rounded-lg bg-twd-dark border border-twd-border text-twd-redBright"><i class="fa-solid fa-skull-crossbones mr-1.5"></i> Sobrevivência: ${s.survivalRate}</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-2 space-y-4">
+                            <p class="text-gray-300 text-sm sm:text-base leading-relaxed">${s.plot}</p>
+                            
+                            <div class="space-y-2">
+                                <h4 class="text-xs uppercase font-bold text-twd-redBright tracking-widest font-typewriter"><i class="fa-solid fa-star mr-1"></i> Acontecimentos / Plots Marcantes:</h4>
+                                <ul class="space-y-1.5 text-xs sm:text-sm text-gray-300">
+                                    ${s.highlights.map(h => `<li class="flex items-start gap-2"><i class="fa-solid fa-caret-right text-twd-redBright mt-1"></i> <span>${h}</span></li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="bg-twd-dark p-4 rounded-xl border border-twd-border space-y-3 font-typewriter text-xs">
+                            <div>
+                                <span class="text-gray-500 block uppercase">Local Principal:</span>
+                                <span class="text-gray-200 font-semibold"><i class="fa-solid fa-location-dot text-twd-redBright mr-1"></i> ${s.location}</span>
+                            </div>
+                            <div class="border-t border-twd-border/50 pt-2">
+                                <span class="text-gray-500 block uppercase">Ameaça / Vilão:</span>
+                                <span class="text-red-400 font-semibold"><i class="fa-solid fa-mask mr-1"></i> ${s.villain}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCharacters() {
+            const grid = document.getElementById('charactersGrid');
+            const searchVal = document.getElementById('characterSearchInput').value.toLowerCase();
+            const statusVal = document.getElementById('characterStatusFilter').value;
+
+            const filtered = charactersData.filter(c => {
+                const matchSearch = c.name.toLowerCase().includes(searchVal) || c.role.toLowerCase().includes(searchVal);
+                const matchStatus = statusVal === 'ALL' || c.category === statusVal || c.status === statusVal;
+                return matchSearch && matchStatus;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-gray-500 font-typewriter">
+                        <i class="fa-solid fa-ghost text-4xl mb-2 text-twd-red"></i>
+                        <p>Nenhum sobrevivente encontrado com os filtros aplicados.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(c => `
+                <div onclick="openCharacterModal('${c.id}')" class="bg-twd-card border border-twd-border rounded-xl overflow-hidden hover:border-twd-red transition-all cursor-pointer group hover:-translate-y-1 shadow-lg">
+                    <div class="relative h-60 bg-twd-dark overflow-hidden">
+                        <img src="${c.avatar}" alt="${c.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-twd-card via-transparent to-transparent"></div>
+                        <span class="absolute top-3 right-3 px-2.5 py-1 rounded-md text-[10px] font-bold font-typewriter uppercase badge-status ${c.status === 'VIVO' ? 'bg-green-950/90 text-green-400 border border-green-800' : 'bg-red-950/90 text-red-400 border border-red-800'}">
+                            ${c.status}
+                        </span>
+                    </div>
+                    <div class="p-4 space-y-2">
+                        <h3 class="text-lg font-bold text-white group-hover:text-twd-redBright transition-colors font-typewriter">${c.name}</h3>
+                        <p class="text-xs text-twd-redBright font-medium">${c.role}</p>
+                        <p class="text-xs text-gray-400 line-clamp-2 italic">"${c.quote}"</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openCharacterModal(id) {
+            const c = charactersData.find(char => char.id === id);
+            if (!c) return;
+
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <div class="flex flex-col sm:flex-row gap-6">
+                    <div class="w-full sm:w-1/2 h-72 rounded-xl overflow-hidden bg-twd-dark border border-twd-border">
+                        <img src="${c.avatar}" alt="${c.name}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="w-full sm:w-1/2 space-y-3 font-typewriter">
+                        <div>
+                            <span class="px-2 py-0.5 text-[10px] rounded uppercase font-bold ${c.status === 'VIVO' ? 'bg-green-900/80 text-green-300' : 'bg-red-900/80 text-red-300'}">${c.status}</span>
+                            <h3 class="text-2xl font-bold text-white mt-1">${c.name}</h3>
+                            <p class="text-xs text-twd-redBright">${c.role}</p>
+                        </div>
+                        <div class="text-xs space-y-1 text-gray-300 border-t border-twd-border/60 pt-2">
+                            <p><strong>Arma Marcante:</strong> ${c.weapon}</p>
+                            <p><strong>Estreia:</strong> ${c.firstApp}</p>
+                            <p><strong>Ator/Atriz:</strong> ${c.actor}</p>
+                        </div>
+                        <p class="text-xs italic text-gray-400 bg-twd-dark p-2.5 rounded border border-twd-border/50">"${c.quote}"</p>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <h4 class="text-xs uppercase font-bold text-twd-redBright font-typewriter">Atributos no Apocalipse</h4>
+                    <div class="space-y-2 text-xs font-typewriter">
+                        <div>
+                            <div class="flex justify-between mb-1"><span>Sobrevivência</span><span>${c.stats.survival}%</span></div>
+                            <div class="w-full bg-twd-dark h-2 rounded-full overflow-hidden"><div class="bg-green-600 h-full" style="width: ${c.stats.survival}%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1"><span>Combate & Armas</span><span>${c.stats.combat}%</span></div>
+                            <div class="w-full bg-twd-dark h-2 rounded-full overflow-hidden"><div class="bg-red-600 h-full" style="width: ${c.stats.combat}%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-1"><span>Liderança Tática</span><span>${c.stats.leadership}%</span></div>
+                            <div class="w-full bg-twd-dark h-2 rounded-full overflow-hidden"><div class="bg-yellow-600 h-full" style="width: ${c.stats.leadership}%"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-2 border-t border-twd-border/60 pt-4">
+                    <h4 class="text-xs uppercase font-bold text-twd-redBright font-typewriter">Biografia e Trajetória</h4>
+                    <p class="text-xs text-gray-300 leading-relaxed">${c.bio}</p>
+                </div>
+            `;
+
+            document.getElementById('characterModal').classList.remove('hidden');
+        }
+
+        class ZombieGame {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.running = false;
+                this.paused = false;
+
+                // Stats
+                this.day = 1;
+                this.kills = 0;
+                this.supplies = 100;
+
+                // Player character defaults
+                this.heroType = 'rick';
+                this.player = {
+                    x: 100,
+                    y: 200,
+                    radius: 16,
+                    speed: 3,
+                    health: 100,
+                    maxHealth: 100,
+                    ammo: 30,
+                    maxAmmo: 30
+                };
+
+                this.bullets = [];
+                this.zombies = [];
+                this.supplyItems = [];
+                this.keys = {};
+
+                this.lastSpawnTime = 0;
+                this.spawnInterval = 1800; // ms
+
+                this.setupCanvasSize();
+                this.bindEvents();
+            }
+
+            setupCanvasSize() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width || 800;
+                this.canvas.height = rect.height || 450;
+                this.player.x = 100;
+                this.player.y = this.canvas.height / 2;
+            }
+
+            bindEvents() {
+                window.addEventListener('resize', () => this.setupCanvasSize());
+
+                // Keyboard events
+                window.addEventListener('keydown', (e) => {
+                    this.keys[e.key.toLowerCase()] = true;
+                    if (e.key === 'r' || e.key === 'R') this.reload();
+                    if (e.key === ' ' && this.running) this.shoot();
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    this.keys[e.key.toLowerCase()] = false;
+                });
+
+                // Canvas Aim/Shoot
+                this.canvas.addEventListener('mousedown', (e) => {
+                    if (!this.running) return;
+                    const rect = this.canvas.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
+                    this.shootTowards(mouseX, mouseY);
+                });
+
+                // Touch Mobile buttons
+                document.getElementById('btnShoot')?.addEventListener('click', () => this.shoot());
+                document.getElementById('btnReload')?.addEventListener('click', () => this.reload());
+
+                // Onscreen dpad simulation
+                ['Up', 'Down', 'Left', 'Right'].forEach(dir => {
+                    const btn = document.getElementById(`btn${dir}`);
+                    if (!btn) return;
+                    btn.addEventListener('touchstart', (e) => { e.preventDefault(); this.keys[`arrow${dir.toLowerCase()}`] = true; });
+                    btn.addEventListener('touchend', (e) => { e.preventDefault(); this.keys[`arrow${dir.toLowerCase()}`] = false; });
+                });
+            }
+
+            setHero(hero) {
+                this.heroType = hero;
+                if (hero === 'rick') {
+                    this.player.maxAmmo = 30;
+                    this.player.speed = 3.2;
+                } else if (hero === 'daryl') {
+                    this.player.maxAmmo = 15;
+                    this.player.speed = 3.5;
+                } else if (hero === 'michonne') {
+                    this.player.maxAmmo = 999; // Melee master
+                    this.player.speed = 4.0;
+                } else if (hero === 'negan') {
+                    this.player.maxAmmo = 999;
+                    this.player.speed = 2.8;
+                }
+                this.player.ammo = this.player.maxAmmo;
+                this.updateHUD();
+            }
+
+            start() {
+                this.running = true;
+                this.paused = false;
+                this.day = 1;
+                this.kills = 0;
+                this.supplies = 100;
+                this.player.health = 100;
+                this.bullets = [];
+                this.zombies = [];
+                this.supplyItems = [];
+                this.ticks = 0;
+                this.setupCanvasSize();
+
+                document.getElementById('gameOverOverlay').classList.add('hidden');
+                document.getElementById('gameStartBtn').classList.add('hidden');
+                document.getElementById('gamePauseBtn').classList.remove('hidden');
+
+                requestAnimationFrame((timestamp) => this.gameLoop(timestamp));
+            }
+
+            reload() {
+                if (this.heroType === 'michonne' || this.heroType === 'negan') return;
+                this.player.ammo = this.player.maxAmmo;
+                this.updateHUD();
+            }
+
+            shoot() {
+                // Shoot straight right towards zombies
+                this.shootTowards(this.canvas.width, this.player.y);
+            }
+
+            shootTowards(targetX, targetY) {
+                if (this.player.ammo <= 0 && this.heroType !== 'michonne' && this.heroType !== 'negan') {
+                    return;
+                }
+
+                const dx = targetX - this.player.x;
+                const dy = targetY - this.player.y;
+                const dist = Math.hypot(dx, dy);
+
+                if (dist === 0) return;
+
+                if (this.heroType === 'michonne' || this.heroType === 'negan') {
+                    // Melee slash area
+                    sounds.playSlash();
+                    this.zombies.forEach((z, idx) => {
+                        const zDist = Math.hypot(z.x - this.player.x, z.y - this.player.y);
+                        if (zDist < 70) {
+                            z.health -= 60;
+                        }
+                    });
+                } else {
+                    sounds.playGunshot();
+                    this.player.ammo--;
+                    this.bullets.push({
+                        x: this.player.x,
+                        y: this.player.y,
+                        vx: (dx / dist) * 10,
+                        vy: (dy / dist) * 10,
+                        radius: 3
+                    });
+                }
+
+                this.updateHUD();
+            }
+
+            spawnZombie() {
+                const y = Math.random() * (this.canvas.height - 80) + 40;
+                const speed = 0.8 + Math.random() * 0.8 + (this.day * 0.1);
+                this.zombies.push({
+                    x: this.canvas.width + 20,
+                    y: y,
+                    radius: 15,
+                    speed: speed,
+                    health: 20 + (this.day * 5),
+                    variant: Math.floor(Math.random() * 3)
+                });
+                sounds.playZombieGrowl();
+            }
+
+            updateHUD() {
+                document.getElementById('gameDayText').innerText = this.day;
+                document.getElementById('gameKillsText').innerText = this.kills;
+                document.getElementById('gameSuppliesText').innerText = this.supplies;
+                document.getElementById('gameAmmoText').innerText = (this.heroType === 'michonne' || this.heroType === 'negan') ? 'INFINITO' : `${this.player.ammo} / ${this.player.maxAmmo}`;
+                document.getElementById('gameHealthText').innerText = `${Math.max(0, Math.floor(this.player.health))} HP`;
+            }
+
+            drawForestBackground(timestamp) {
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+
+                // Fundo do solo da floresta
+                this.ctx.fillStyle = '#0a1208';
+                this.ctx.fillRect(0, 0, w, h);
+
+                // Trilha de terra
+                this.ctx.fillStyle = '#1c150c';
+                this.ctx.fillRect(0, h * 0.25, w, h * 0.5);
+
+                // Textura pixelada do solo e grama
+                this.ctx.fillStyle = '#142211';
+                for (let x = 0; x < w; x += 16) {
+                    this.ctx.fillRect(x, 0, 16, h * 0.25);
+                    this.ctx.fillRect(x + (x % 32 === 0 ? 0 : 8), h * 0.75, 16, h * 0.25);
+                }
+
+                // Árvores de fundo em pixel art
+                for (let x = 20; x < w; x += 90) {
+                    this.drawPixelTree(x, 15, 0.9);
+                    this.drawPixelTree(x + 45, h - 65, 0.9);
+                }
+
+                // Barricada de madeira pixelada no limite (x = 150)
+                this.ctx.fillStyle = '#3a2312';
+                for (let y = 0; y < h; y += 16) {
+                    this.ctx.fillRect(146, y, 12, 14);
+                    this.ctx.fillStyle = '#5c3a21';
+                    this.ctx.fillRect(148, y + 2, 8, 10);
+                    this.ctx.fillStyle = '#3a2312';
+                }
+
+                // Arame farpado sobre a barricada
+                this.ctx.strokeStyle = '#9ca3af';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.moveTo(152, 0);
+                this.ctx.lineTo(152, h);
+                this.ctx.stroke();
+
+                // Detalhes de sangue na barricada
+                this.ctx.fillStyle = '#8b0000';
+                this.ctx.fillRect(148, h * 0.3, 8, 12);
+                this.ctx.fillRect(148, h * 0.65, 8, 8);
+
+                // Névoa pixelada em movimento lento
+                const fogOffset = (timestamp * 0.02) % w;
+                this.ctx.fillStyle = 'rgba(120, 140, 120, 0.05)';
+                this.ctx.fillRect(fogOffset - w, 0, w, h);
+                this.ctx.fillRect(fogOffset, 0, w, h);
+            }
+
+            drawPixelTree(x, y, scale) {
+                const p = 3 * scale;
+                // Tronco
+                this.ctx.fillStyle = '#2b1810';
+                this.ctx.fillRect(x + 3 * p, y + 6 * p, 3 * p, 8 * p);
+                
+                // Folhagem pixelada em camadas
+                this.ctx.fillStyle = '#0f290d';
+                this.ctx.fillRect(x, y + 3 * p, 9 * p, 4 * p);
+                this.ctx.fillStyle = '#163d13';
+                this.ctx.fillRect(x + p, y + p, 7 * p, 4 * p);
+                this.ctx.fillStyle = '#21541c';
+                this.ctx.fillRect(x + 2 * p, y - p, 5 * p, 3 * p);
+            }
+
+            drawPixelPlayer() {
+                const px = this.player.x;
+                const py = this.player.y;
+                const p = 2; // Tamanho do pixel
+                const legAnim = Math.sin((this.ticks || 0) * 0.2) * 2;
+
+                // Sombra no chão
+                this.ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                this.ctx.fillRect(px - 8, py + 14, 16, 5);
+
+                // Pernas / Calças
+                this.ctx.fillStyle = this.heroType === 'rick' ? '#1e3a8a' : '#27272a';
+                this.ctx.fillRect(px - 5, py + 4 + legAnim, 4, 10);
+                this.ctx.fillRect(px + 1, py + 4 - legAnim, 4, 10);
+
+                // Corpo / Camisa
+                if (this.heroType === 'rick') this.ctx.fillStyle = '#ca8a04'; // Camisa bege/xerife
+                else if (this.heroType === 'daryl') this.ctx.fillStyle = '#3f3f46'; // Colete escuro
+                else if (this.heroType === 'michonne') this.ctx.fillStyle = '#3b82f6'; // Regata azul
+                else this.ctx.fillStyle = '#18181b'; // Jaqueta preta (Negan)
+                
+                this.ctx.fillRect(px - 6, py - 6, 12, 10);
+
+                // Detalhes especiais da roupa
+                if (this.heroType === 'negan') {
+                    // Lenço vermelho do Negan
+                    this.ctx.fillStyle = '#dc2626';
+                    this.ctx.fillRect(px - 3, py - 6, 6, 3);
+                }
+
+                // Cabeça / Tom de pele
+                this.ctx.fillStyle = '#f5d0c5';
+                this.ctx.fillRect(px - 4, py - 14, 8, 8);
+
+                // Cabelo / Chapéu
+                if (this.heroType === 'rick') {
+                    // Chapéu de Xerife
+                    this.ctx.fillStyle = '#5c3a21';
+                    this.ctx.fillRect(px - 7, py - 16, 14, 3);
+                    this.ctx.fillRect(px - 4, py - 19, 8, 4);
+                } else if (this.heroType === 'michonne') {
+                    // Faixa roxa na cabeça e dreads
+                    this.ctx.fillStyle = '#7e22ce';
+                    this.ctx.fillRect(px - 5, py - 15, 10, 3);
+                    this.ctx.fillStyle = '#18181b';
+                    this.ctx.fillRect(px - 6, py - 12, 3, 10);
+                } else if (this.heroType === 'daryl') {
+                    // Cabelo comprido castanho
+                    this.ctx.fillStyle = '#451a03';
+                    this.ctx.fillRect(px - 5, py - 15, 10, 4);
+                    this.ctx.fillRect(px - 6, py - 12, 3, 6);
+                } else {
+                    // Cabelo/Barba cinza Negan
+                    this.ctx.fillStyle = '#52525b';
+                    this.ctx.fillRect(px - 4, py - 15, 8, 3);
+                }
+
+                // Olhos
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(px + 1, py - 11, 2, 2);
+
+                // Armas em Pixel Art
+                if (this.heroType === 'michonne') {
+                    // Katana prateada
+                    this.ctx.fillStyle = '#e2e8f0';
+                    this.ctx.fillRect(px + 4, py - 4, 16, 2);
+                    this.ctx.fillStyle = '#78350f';
+                    this.ctx.fillRect(px + 2, py - 4, 3, 2);
+                } else if (this.heroType === 'negan') {
+                    // Taco Lucille
+                    this.ctx.fillStyle = '#a16207';
+                    this.ctx.fillRect(px + 4, py - 8, 12, 4);
+                    this.ctx.fillStyle = '#9ca3af'; // Arame farpado
+                    this.ctx.fillRect(px + 12, py - 9, 3, 6);
+                } else if (this.heroType === 'daryl') {
+                    // Besta
+                    this.ctx.fillStyle = '#15803d';
+                    this.ctx.fillRect(px + 2, py - 3, 10, 3);
+                    this.ctx.fillStyle = '#e2e8f0';
+                    this.ctx.fillRect(px + 6, py - 6, 2, 9);
+                } else {
+                    // Colt Python .357
+                    this.ctx.fillStyle = '#9ca3af';
+                    this.ctx.fillRect(px + 4, py - 3, 8, 3);
+                    this.ctx.fillStyle = '#451a03';
+                    this.ctx.fillRect(px + 2, py - 2, 3, 4);
+                }
+            }
+
+            drawPixelZombie(z) {
+                const zx = z.x;
+                const zy = z.y;
+                const p = 2;
+                const legAnim = Math.sin((this.ticks || 0) * 0.15 + zy) * 3;
+
+                // Sombra do Zumbi
+                this.ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                this.ctx.fillRect(zx - 8, zy + 14, 16, 5);
+
+                // Pernas / Calça Rasgada
+                this.ctx.fillStyle = z.variant === 1 ? '#3f3f46' : (z.variant === 2 ? '#1e293b' : '#334155');
+                this.ctx.fillRect(zx - 4, zy + 4 + legAnim, 4, 10);
+                this.ctx.fillRect(zx + 1, zy + 4 - legAnim, 4, 10);
+
+                // Torso / Roupas Deterioradas (Verde escuro / Podre)
+                this.ctx.fillStyle = z.variant === 1 ? '#15803d' : (z.variant === 2 ? '#365314' : '#1e3a8a');
+                this.ctx.fillRect(zx - 5, zy - 6, 10, 10);
+
+                // Manchas de Sangue na Roupa
+                this.ctx.fillStyle = '#7f1d1d';
+                this.ctx.fillRect(zx - 2, zy - 2, 4, 4);
+
+                // Braços Estendidos de Zumbi (apontando para a esquerda)
+                this.ctx.fillStyle = '#4d7c0f'; // Pele verde-pálida de zumbi
+                this.ctx.fillRect(zx - 12, zy - 4, 8, 3);
+                this.ctx.fillRect(zx - 12, zy + 1, 8, 3);
+
+                // Cabeça Podre
+                this.ctx.fillRect(zx - 4, zy - 14, 8, 8);
+
+                // Olhos Vermelhos Brilhantes de Walker
+                this.ctx.fillStyle = '#ef4444';
+                this.ctx.fillRect(zx - 3, zy - 11, 2, 2);
+                this.ctx.fillRect(zx + 1, zy - 11, 2, 2);
+
+                // Boca aberta / Sangue
+                this.ctx.fillStyle = '#450a0a';
+                this.ctx.fillRect(zx - 2, zy - 7, 4, 2);
+            }
+
+            gameLoop(timestamp) {
+                if (!this.running || this.paused) return;
+
+                this.ticks = (this.ticks || 0) + 1;
+
+                // Renderiza Cenário da Floresta
+                this.drawForestBackground(timestamp);
+
+                // Movimentação do Jogador
+                if ((this.keys['w'] || this.keys['arrowup']) && this.player.y > 30) this.player.y -= this.player.speed;
+                if ((this.keys['s'] || this.keys['arrowdown']) && this.player.y < this.canvas.height - 30) this.player.y += this.player.speed;
+                if ((this.keys['a'] || this.keys['arrowleft']) && this.player.x > 30) this.player.x -= this.player.speed;
+                if ((this.keys['d'] || this.keys['arrowright']) && this.player.x < 140) this.player.x += this.player.speed;
+
+                // Renderiza Sobrevivente em Pixel Art
+                this.drawPixelPlayer();
+
+                // Spawna zumbis
+                if (timestamp - this.lastSpawnTime > Math.max(600, this.spawnInterval - (this.day * 100))) {
+                    this.spawnZombie();
+                    this.lastSpawnTime = timestamp;
+                }
+
+                // Atualiza & Desenha Projéteis
+                for (let i = this.bullets.length - 1; i >= 0; i--) {
+                    const b = this.bullets[i];
+                    b.x += b.vx;
+                    b.y += b.vy;
+
+                    this.ctx.fillStyle = '#fde047';
+                    this.ctx.fillRect(b.x - 2, b.y - 2, 5, 3);
+
+                    if (b.x > this.canvas.width || b.x < 0 || b.y > this.canvas.height || b.y < 0) {
+                        this.bullets.splice(i, 1);
+                    }
+                }
+
+                // Atualiza & Desenha Zumbis em Pixel Art
+                for (let i = this.zombies.length - 1; i >= 0; i--) {
+                    const z = this.zombies[i];
+                    z.x -= z.speed;
+
+                    // Desenha o Zumbi Pixelado
+                    this.drawPixelZombie(z);
+
+                    // Colisão de Balas com Zumbis
+                    for (let j = this.bullets.length - 1; j >= 0; j--) {
+                        const b = this.bullets[j];
+                        const dist = Math.hypot(z.x - b.x, z.y - b.y);
+                        if (dist < z.radius + b.radius) {
+                            z.health -= 25;
+                            this.bullets.splice(j, 1);
+                            break;
+                        }
+                    }
+
+                    // Morte do Zumbi
+                    if (z.health <= 0) {
+                        this.zombies.splice(i, 1);
+                        this.kills++;
+                        this.supplies += 10;
+
+                        if (this.kills % 10 === 0) {
+                            this.day++;
+                        }
+                        this.updateHUD();
+                        continue;
+                    }
+
+                    // Dano na Barricada / Jogador
+                    if (z.x <= 150) {
+                        this.player.health -= 0.15;
+                        this.updateHUD();
+
+                        if (this.player.health <= 0) {
+                            this.gameOver();
+                            return;
+                        }
+                    }
+                }
+
+                requestAnimationFrame((ts) => this.gameLoop(ts));
+            }
+
+            gameOver() {
+                this.running = false;
+                document.getElementById('finalDaysText').innerText = this.day;
+                document.getElementById('finalKillsText').innerText = this.kills;
+                document.getElementById('gameOverOverlay').classList.remove('hidden');
+                document.getElementById('gamePauseBtn').classList.add('hidden');
+                document.getElementById('gameStartBtn').classList.remove('hidden');
+            }
+        }
+
+        const quizQuestions = [
+            {
+                question: "Sua comunidade descobre um grupo desconhecido de sobreviventes sem mantimentos batendo nos portões. O que você faz?",
+                options: [
+                    { text: "Abro os portões imediatamente e compartilho nossa comida.", hero: "Glenn" },
+                    { text: "Faço as 3 perguntas: Quantos zumbis matou? Quantas pessoas? Por quê?", hero: "Rick" },
+                    { text: "Exijo que entreguem metade de seus mantimentos como tributo de proteção.", hero: "Negan" },
+                    { text: "Observo do alto dos muros com a besta engatilhada em silêncio.", hero: "Daryl" }
+                ]
+            },
+            {
+                question: "Sua arma primária em uma emboscada em campo aberto é:",
+                options: [
+                    { text: "Uma Katana silenciosa e afiada.", hero: "Michonne" },
+                    { text: "Um revólver .357 de alto impacto.", hero: "Rick" },
+                    { text: "Uma besta com flechas reutilizáveis.", hero: "Daryl" },
+                    { text: "Táticas de emboscada e camuflagem rápida.", hero: "Carol" }
+                ]
+            }
+        ];
+
+        let currentQuestionIdx = 0;
+
+        function renderQuiz() {
+            const container = document.getElementById('quizContainer');
+            const q = quizQuestions[currentQuestionIdx];
+
+            if (!q) {
+                container.innerHTML = `
+                    <div class="text-center py-6 space-y-4 font-typewriter">
+                        <i class="fa-solid fa-award text-5xl text-yellow-500"></i>
+                        <h3 class="text-2xl font-bold text-white">Perfil Identificado!</h3>
+                        <p class="text-sm text-gray-300">Sua personalidade e mentalidade tática correspondem a <strong>Rick Grimes / Carol Peletier</strong>: Um sobrevivente pragmático capaz de fazer o que é necessário para proteger quem ama.</p>
+                        <button onclick="currentQuestionIdx=0; renderQuiz();" class="px-4 py-2 bg-twd-red text-white text-xs uppercase font-bold rounded">Refazer Teste</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="bg-twd-dark p-6 rounded-xl border border-twd-border space-y-4 font-typewriter">
+                    <span class="text-xs text-twd-redBright uppercase tracking-widest block">Pergunta ${currentQuestionIdx + 1} de ${quizQuestions.length}</span>
+                    <h3 class="text-lg font-bold text-white">${q.question}</h3>
+                    <div class="space-y-2 pt-2">
+                        ${q.options.map((opt, i) => `
+                            <button onclick="answerQuiz(${i})" class="w-full text-left p-3 rounded-lg bg-twd-card border border-twd-border hover:border-twd-red text-sm text-gray-200 transition-all hover:translate-x-1">
+                                ${opt.text}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function answerQuiz(idx) {
+            currentQuestionIdx++;
+            renderQuiz();
+        }
+
+        let gameInstance = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderSeasons();
+            renderCharacters();
+            renderQuiz();
+
+            gameInstance = new ZombieGame();
+
+            // Character search & filter listeners
+            document.getElementById('characterSearchInput').addEventListener('input', renderCharacters);
+            document.getElementById('characterStatusFilter').addEventListener('change', renderCharacters);
+
+            // Close modal button
+            document.getElementById('closeModalBtn').addEventListener('click', () => {
+                document.getElementById('characterModal').classList.add('hidden');
+            });
+
+            // Mobile menu toggle
+            document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+                document.getElementById('mobileMenu').classList.toggle('hidden');
+            });
+
+            // Sound toggle
+            document.getElementById('soundtrackToggleBtn').addEventListener('click', () => {
+                sounds.enabled = !sounds.enabled;
+                document.getElementById('soundLabel').innerText = sounds.enabled ? 'Som: LIGADO' : 'Som: DESLIGADO';
+                document.getElementById('soundIcon').className = sounds.enabled ? 'fa-solid fa-volume-high text-twd-redBright' : 'fa-solid fa-volume-xmark text-gray-500';
+            });
+
+            // Hero Picker Buttons
+            document.querySelectorAll('.hero-pick-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.hero-pick-btn').forEach(b => b.classList.remove('border-2', 'border-twd-red'));
+                    const target = e.currentTarget;
+                    target.classList.add('border-2', 'border-twd-red');
+                    gameInstance.setHero(target.dataset.hero);
+                });
+            });
+
+            // Start Game
+            document.getElementById('gameStartBtn').addEventListener('click', () => gameInstance.start());
+            document.getElementById('restartGameBtn').addEventListener('click', () => gameInstance.start());
+
+            // Loja de Upgrades do Jogo
+            document.getElementById('buyHealthBtn').addEventListener('click', () => {
+                if (gameInstance.supplies >= 30) {
+                    gameInstance.supplies -= 30;
+                    gameInstance.player.health = Math.min(100, gameInstance.player.health + 40);
+                    gameInstance.updateHUD();
+                }
+            });
+
+            document.getElementById('buyAmmoBtn').addEventListener('click', () => {
+                if (gameInstance.supplies >= 25) {
+                    gameInstance.supplies -= 25;
+                    gameInstance.player.ammo += 30;
+                    gameInstance.updateHUD();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
